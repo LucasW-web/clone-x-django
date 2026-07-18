@@ -1,0 +1,59 @@
+{% extends 'twitter/base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 600px;">
+    <div class="sidebar" style="width: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 22px; font-weight: 800;">Configuração de Perfil</h2>
+            <a href="{% url 'feed' %}" style="color: #1da1f2; text-decoration: none; font-size: 15px;">Voltar ao Feed</a>
+        </div>
+
+        {% if success %}
+        <p style="color: #00ba7c; font-size: 14px; margin-bottom: 15px;">Perfil atualizado com sucesso!</p>
+        {% endif %}
+
+        <!-- Listas de Seguidores e Seguidos (Requisito da Aula) -->
+        <div style="display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid #2f3336; padding-bottom: 15px;">
+            <span style="font-size: 15px; color: #71767b;"><strong style="color: white;">{{ seguidos.count }}</strong> Seguindo</span>
+            <span style="font-size: 15px; color: #71767b;"><strong style="color: white;">{{ seguidores.count }}</strong> Seguidores</span>
+        </div>
+
+        <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+            {% csrf_token %}
+            <div>
+                <label style="display: block; font-size: 14px; color: #71767b; margin-bottom: 5px;">Nome de Usuário</label>
+                <input type="text" name="username" value="{{ request.user.username }}" required style="width: 100%; background-color: #16181c; color: white; border: 1px solid #2f3336; border-radius: 8px; padding: 10px; font-size: 16px; outline: none;">
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 14px; color: #71767b; margin-bottom: 5px;">Link da Foto de Perfil (URL)</label>
+                <input type="text" name="profile_picture" placeholder="https://exemplo.com" style="width: 100%; background-color: #16181c; color: white; border: 1px solid #2f3336; border-radius: 8px; padding: 10px; font-size: 16px; outline: none;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 14px; color: #71767b; margin-bottom: 5px;">Biografia</label>
+                <textarea name="bio" placeholder="Conte um pouco sobre você..." style="width: 100%; height: 70px; background-color: #16181c; color: white; border: 1px solid #2f3336; border-radius: 8px; padding: 10px; font-size: 16px; outline: none; margin-bottom: 0;">{{ request.user.profile.bio }}</textarea>
+            </div>
+
+            <div style="border-top: 1px solid #2f3336; padding-top: 15px;">
+                <label style="display: block; font-size: 14px; color: #71767b; margin-bottom: 5px;">Nova Senha (Deixe em branco para não alterar)</label>
+                <input type="password" name="password" style="width: 100%; background-color: #16181c; color: white; border: 1px solid #2f3336; border-radius: 8px; padding: 10px; font-size: 16px; outline: none;">
+            </div>
+
+            <button type="submit" class="btn-blue" style="float: none; width: 100%; padding: 12px; margin-top: 10px;">Salvar Alterações</button>
+        </form>
+
+        <!-- Exibição nominal de quem segue o usuário -->
+        <div style="margin-top: 30px; border-top: 1px solid #2f3336; padding-top: 15px;">
+            <h3 style="font-size: 16px; color: #71767b; margin-bottom: 10px;">Lista de Seguidores:</h3>
+            {% for f in seguidores %}
+                <p style="font-size: 14px; padding: 4px 0;">@{{ f.user_from.username }}</p>
+            {% empty %}
+                <p style="font-size: 14px; color: #71767b;">Ninguém te segue ainda.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
