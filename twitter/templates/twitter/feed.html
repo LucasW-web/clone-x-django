@@ -1,4 +1,5 @@
 {% extends 'twitter/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container">
@@ -6,30 +7,34 @@
     <div class="sidebar" style="display: flex; flex-direction: column; gap: 20px;">
         <div>
             <h3 class="username" style="font-size: 20px;">@{{ request.user.username }}</h3>
-            <p style="color: #71767b; font-size: 14px; margin-top: 5px; margin-bottom: 10px;">Bem-vindo ao seu feed!</p>
-            
-            <!-- CONFIRME SE ESTA LINHA ABAIXO EXISTE NO SEU ARQUIVO: -->
-            <a href="{% url 'profile' %}" class="btn-follow" style="display: block; text-align: center; margin-bottom: 10px; text-decoration: none;">Editar Perfil</a>
-            
-            <a href="{% url 'logout' %}" class="btn-red">Sair da Conta</a>
+            <p style="color: #71767b; font-size: 14px; margin-top: 5px; margin-bottom: 10px;">Seja bem-vindo!</p>
+            <a href="{% url 'profile' %}" class="btn-follow" style="display: block; text-align: center; margin-top: 10px;">Ver Perfil</a>
+            <a href="{% url 'logout' %}" class="btn-red" style="display: block; text-align: center; margin-top: 5px;">Sair da Conta</a>
         </div>
-
 
         <!-- Bloco Quem Seguir -->
         <div style="border-top: 1px solid #2f3336; padding-top: 15px;">
             <h4 style="font-size: 18px; font-weight: 800; margin-bottom: 10px; color: #e7e9ea;">Quem seguir</h4>
             <div style="display: flex; flex-direction: column;">
                 {% for target_user in all_users %}
-                <div class="user-row">
-                    <span class="username">@{{ target_user.username }}</span>
-                    {% if target_user.id in following_ids %}
-                    <a href="{% url 'follow_toggle' target_user.id %}" class="btn-unfollow">Seguindo</a>
-                    {% else %}
-                    <a href="{% url 'follow_toggle' target_user.id %}" class="btn-follow">Seguir</a>
-                    {% endif %}
-                </div>
+                    <div class="user-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        {% if target_user.profile.profile_picture %}
+                            <img src="{{ target_user.profile.profile_picture.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto de perfil">
+                        {% else %}
+                            <img src="https://twimg.com" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
+                        {% endif %}
+
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="username">@{{ target_user.username }}</span>
+                            {% if target_user.id in following_ids %}
+                                <a href="{% url 'follow_toggle' target_user.id %}" class="btn-unfollow">Seguindo</a>
+                            {% else %}
+                                <a href="{% url 'follow_toggle' target_user.id %}" class="btn-follow">Seguir</a>
+                            {% endif %}
+                        </div>
+                    </div>
                 {% empty %}
-                <p style="color: #71767b; font-size: 14px;">Nenhum outro usuário cadastrado.</p>
+                    <p style="color: #71767b; font-size: 14px;">Nenhum outro usuário cadastrado.</p>
                 {% endfor %}
             </div>
         </div>
@@ -41,58 +46,72 @@
         <div class="tweet-box">
             <form method="POST" action="{% url 'feed' %}">
                 {% csrf_token %}
-                <textarea name="content" maxlength="280" required placeholder="O que está acontecendo?"></textarea>
+                <textarea name="content" maxlength="280" required placeholder="O que está acontecendo?" style="width: 100%; height: 80px; resize: none; background: transparent; color: white; border: 1px solid #2f3336; border-radius: 10px; padding: 10px;"></textarea>
                 <div style="overflow: hidden; padding-bottom: 5px;">
-                    <button type="submit" class="btn-blue">Postar</button>
+                    <button type="submit" class="btn-blue" style="float: right; margin-top: 10px;">Postar</button>
                 </div>
             </form>
         </div>
 
-        <!-- Linha do Tempo -->
-        <div style="display: flex; flex-direction: column;">
+        <!-- Linha do Tempo (Feed) -->
+        <div style="display: flex; flex-direction: column; margin-top: 20px;">
             {% for tweet in tweets %}
-            <div class="tweet">
-                <div class="tweet-header">
-                    <span class="username">@{{ tweet.user.username }}</span>
-                    <span class="handle">·</span>
-                    <span class="date">{{ tweet.created_at|date:"d/m/Y H:i" }}</span>
-                </div>
-                <p style="line-height: 1.5; font-size: 15px; color: #e7e9ea; word-break: break-word; white-space: pre-wrap; margin-bottom: 12px;">{{ tweet.content }}</p>
-                
-                <!-- Botão de Curtir -->
-                <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 15px;">
-                    <a href="{% url 'like_toggle' tweet.id %}" style="text-decoration: none; font-size: 14px; color: #71767b; display: flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.color='#f4212e'" onmouseout="this.style.color='#71767b'">
-                        ❤️ <span style="color: #71767b;">{{ tweet.likes.count }}</span>
-                    </a>
-                </div>
-
-                <!-- Lista de Comentários Existentes -->
-                <div style="margin-left: 20px; border-left: 2px solid #2f3336; padding-left: 15px; display: flex; flex-direction: column; gap: 10px;">
-                    {% for comment in tweet.comments.all %}
-                    <div style="font-size: 14px;">
-                        <span class="username" style="font-size: 14px;">@{{ comment.user.username }}</span>
-                        <span style="color: #71767b; font-size: 12px;">· {{ comment.created_at|date:"H:i" }}</span>
-                        <p style="color: #d7dbdc; margin-top: 2px;">{{ comment.content }}</p>
+                <div class="tweet" style="display: flex; gap: 12px; border-bottom: 1px solid #2f3336; padding: 15px 0;">
+                    <!-- Foto de perfil do autor do Tweet -->
+                    <div>
+                        {% if tweet.user.profile.profile_picture %}
+                            <img src="{{ tweet.user.profile.profile_picture.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto de perfil">
+                        {% else %}
+                            <img src="https://twimg.com" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
+                        {% endif %}
                     </div>
-                    {% endfor %}
-                    
-                    <!-- Formulário para Enviar Novo Comentário -->
-                    <form method="POST" action="{% url 'add_comment' tweet.id %}" style="display: flex; gap: 10px; margin-top: 10px;">
-                        {% csrf_token %}
-                        <input type="text" name="comment_content" required placeholder="Postar sua resposta" style="flex: 1; background-color: #16181c; color: white; border: 1px solid #2f3336; border-radius: 9999px; padding: 6px 16px; font-size: 14px; outline: none;">
-                        <button type="submit" style="background-color: #eff3f4; color: #0f1419; border: none; padding: 6px 16px; font-weight: bold; border-radius: 9999px; cursor: pointer; font-size: 13px;">Responder</button>
-                    </form>
+
+                    <!-- Conteúdo do Tweet -->
+                    <div style="display: flex; flex-direction: column; flex: 1;">
+                        <div class="tweet-header" style="display: flex; gap: 8px; align-items: center;">
+                            <span class="username" style="font-weight: bold; color: #e7e9ea;">@{{ tweet.user.username }}</span>
+                            <span class="handle"></span>
+                            <span class="date" style="color: #71767b; font-size: 14px;">{{ tweet.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        
+                        <p style="line-height: 1.5; font-size: 15px; color: #e7e9ea; word-break: break-all; margin-top: 4px;">{{ tweet.content }}</p>
+
+                        <!-- Botão de Curtir -->
+                        <div style="display: flex; gap: 5px; align-items: center; margin-top: 10px; margin-bottom: 15px;">
+                            <a href="{% url 'like_toggle' tweet.id %}" style="text-decoration: none;">
+                                ❤️ <span style="color: #71767b;">{{ tweet.likes.count }}</span>
+                            </a>
+                        </div>
+
+                        <!-- Lista de Comentários Existentes -->
+                        <div style="margin-left: 20px; border-left: 2px solid #2f3336; padding-left: 10px;">
+                            {% for comment in tweet.comments.all %}
+                                <div style="font-size: 14px; margin-bottom: 8px;">
+                                    <span class="username" style="font-weight: bold; color: #e7e9ea;">@{{ comment.user.username }}</span>
+                                    <span style="color: #71767b; font-size: 12px;"> · {{ comment.created_at|date:"d/m/Y H:i" }}</span>
+                                    <p style="color: #d7dbdc; margin-top: 2px;">{{ comment.content }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Formulado para Enviar Novo Comentário -->
+                        <form method="POST" action="{% url 'add_comment' tweet.id %}" style="display: flex; gap: 8px; margin-top: 10px; margin-left: 20px;">
+                            {% csrf_token %}
+                            <input type="text" name="comment_content" required placeholder="Escreva um comentário..." style="flex: 1; background: transparent; color: white; border: 1px solid #2f3336; border-radius: 20px; padding: 5px 12px; font-size: 14px;">
+                            <button type="submit" style="background-color: #eff3f4; color: black; border: none; border-radius: 20px; padding: 5px 15px; font-size: 14px; font-weight: bold; cursor: pointer;">Responder</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
             {% empty %}
-            <div class="empty-feed">
-                Nenhum post para exibir ainda. Seu feed mostra apenas posts seus e de quem você segue!
-            </div>
+                <div class="empty-feed" style="text-align: center; padding: 4px 0;">
+                    <p style="color: #71767b;">Nenhum post para exibir ainda. Seu feed mostra apenas posts seus e de quem você segue.</p>
+                </div>
             {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
+
 
 
 
