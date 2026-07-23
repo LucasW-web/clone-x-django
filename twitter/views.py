@@ -53,10 +53,25 @@ def feed_view(request):
         if content:
             Tweet.objects.create(user=request.user, content=content)
             return redirect('feed')
+            
+    # 1. Busca todos os tweets do banco
+    tweets = Tweet.objects.all().order_by('-created_at')
+    
+    # 2. Busca todos os usuários cadastrados, exceto você mesmo
+    all_users = User.objects.exclude(id=request.user.id)
+    
+    # 3. Mapeia quem você já está seguindo usando o modelo Follow
+    following_ids = Follow.objects.filter(user_from=request.user).values_list('user_to_id', flat=True)
+    
+    # 4. Adiciona tudo no dicionário de contexto para o HTML ler
+    context = {
+        'tweets': tweets,
+        'all_users': all_users,
+        'following_ids': following_ids,
+    }
+    
+    return render(request, 'twitter/feed.html', context)
 
-    # Busca todos os tweets do banco para exibir no feed global inicialmente
-    tweets = Tweet.objects.all()
-    return render(request, 'twitter/feed.html', {'tweets': tweets})
 
     # 6. Função para Curtir / Descurtir um Post
 @login_required(login_url='login')
