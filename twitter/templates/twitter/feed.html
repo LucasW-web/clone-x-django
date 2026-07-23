@@ -18,11 +18,12 @@
             <div style="display: flex; flex-direction: column;">
                 {% for target_user in all_users %}
                     <div class="user-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                {% if target_user.profile.profile_picture %}
+                                        {% if target_user.profile.profile_picture %}
             <img src="{{ target_user.profile.profile_picture.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto de perfil">
         {% else %}
-            <img src="https://twimg.com" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
+            <img src="{% static 'images/default.png' %}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
         {% endif %}
+
 
 
                         <div style="display: flex; flex-direction: column;">
@@ -60,12 +61,12 @@
                 <div class="tweet" style="display: flex; gap: 12px; border-bottom: 1px solid #2f3336; padding: 15px 0;">
                     <!-- Foto de perfil do autor do Tweet -->
                     <div>
-                        {% if tweet.user.profile.profile_picture %}
-                            <img src="{{ tweet.user.profile.profile_picture.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto de perfil">
-                        {% else %}
-                            <img src="https://twimg.com" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
+                                {% if tweet.user.profile.profile_picture %}
+            <img src="{{ tweet.user.profile.profile_picture.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto de perfil">
+        {% else %}
+            <img src="{% static 'images/default.png' %}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Foto padrão">
+        {% endif %}
 
-                        {% endif %}
                     </div>
 
                     <!-- Conteúdo do Tweet -->
